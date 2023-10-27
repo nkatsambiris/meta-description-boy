@@ -1,10 +1,37 @@
 <?php
-/*
-Plugin Name: Meta Description Boy
-Description: Auto-generates meta description for post types using OpenAI.
-Version: 1.0.1
-Author: Nicholas Katsambiris
+/**
+* Plugin Name: Meta Description Boy
+* Description: Auto-generates meta description for post types using OpenAI.
+* Version: 1.0
+* Plugin URI:  https://www.katsambiris.com
+* Author: Nicholas Katsambiris
+* Update URI: meta-description-boy
+* License:     GPL v3
+* Requires at least: 6.2
+* Requires PHP: 7.2.5
+*
+* WC requires at least: 7.1
+* WC tested up to: 8.2
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+defined( 'ABSPATH' ) || exit;
+
+
+$plugin = plugin_basename(__FILE__);  // Gets the correct file name for your plugin.
+add_filter("plugin_action_links_$plugin", 'meta_description_boy_add_settings_link');
 
 // Code to run during plugin activation
 function meta_description_boy_activate() {
@@ -12,6 +39,16 @@ function meta_description_boy_activate() {
     add_option('meta_description_boy_post_types', array('post', 'page'));
 }
 register_activation_hook(__FILE__, 'meta_description_boy_activate');
+
+// Remove options when the plugin is uninstalled
+function meta_description_boy_uninstall() {
+    delete_option('meta_description_boy_api_key');
+    delete_option('meta_description_boy_post_types');
+    delete_option('meta_description_boy_selected_model');
+    delete_option('meta_description_boy_prompt_text');
+    delete_option('meta_description_boy_access_role');
+}
+register_uninstall_hook(__FILE__, 'meta_description_boy_uninstall');
 
 // Add admin menu
 function meta_description_boy_add_admin_menu() {
@@ -23,8 +60,6 @@ function meta_description_boy_add_admin_menu() {
 }
 add_action('admin_menu', 'meta_description_boy_add_admin_menu');
 
-$plugin = plugin_basename(__FILE__);  // Gets the correct file name for your plugin.
-add_filter("plugin_action_links_$plugin", 'meta_description_boy_add_settings_link');
 
 
 function meta_description_boy_add_settings_link($links) {
@@ -415,17 +450,45 @@ function meta_description_boy_check_for_update($transient) {
         return $transient;
     }
 
-    $updater = new My_Plugin_Updater('1.0.0', 'https://github.com/nkatsambiris/Meta-Description-Boy/blob/main/updates.json');
+    $updater = new My_Plugin_Updater('1.0.0', 'https://raw.githubusercontent.com/nkatsambiris/meta-description-boy/main/updates.json');
     $update_data = $updater->check_for_update();
 
     if ($update_data) {
         $transient->response['meta-description-boy/index.php'] = (object) array(
             'new_version' => $update_data['version'],
             'package'     => $update_data['download_url'],
-            'slug'        => 'meta-description-boy'
+            'slug'        => 'meta-description-boy',
+            'plugin'      => 'meta-description-boy/index.php',  // This line ensures WordPress knows which plugin is being updated
         );
     }
 
     return $transient;
 }
 add_filter('pre_set_site_transient_update_plugins', 'meta_description_boy_check_for_update');
+
+
+function meta_description_boy_plugin_info($false, $action, $args) {
+    error_log(print_r($args, true));
+    if (isset($args->slug) && $args->slug === 'meta-description-boy') {
+        $response = wp_remote_get('https://raw.githubusercontent.com/nkatsambiris/meta-description-boy/main/plugin-info.json');
+        if (!is_wp_error($response)) {
+            $plugin_info = json_decode(wp_remote_retrieve_body($response));
+            if ($plugin_info) {
+                return (object) array(
+                    'name' => $plugin_info->name,
+                    'version' => $plugin_info->version,
+                    'author' => $plugin_info->author,
+                    'requires' => $plugin_info->requires,
+                    'tested' => $plugin_info->tested,
+                    'last_updated' => $plugin_info->last_updated,
+                    'sections' => array(
+                        'description' => $plugin_info->sections->description,
+                        'changelog' => $plugin_info->sections->changelog
+                    )
+                );
+            }
+        }
+    }
+    return $false;
+}
+add_filter('plugins_api', 'meta_description_boy_plugin_info', 10, 3);
