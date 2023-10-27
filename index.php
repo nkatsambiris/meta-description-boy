@@ -6,12 +6,10 @@
 * Plugin URI:  https://www.katsambiris.com
 * Author: Nicholas Katsambiris
 * Update URI: meta-description-boy
-* License:     GPL v3
+* License: GPL v3
+* Tested up to: 6.3
 * Requires at least: 6.2
 * Requires PHP: 7.2.5
-*
-* WC requires at least: 7.1
-* WC tested up to: 8.2
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -468,13 +466,13 @@ add_filter('pre_set_site_transient_update_plugins', 'meta_description_boy_check_
 
 
 function meta_description_boy_plugin_info($false, $action, $args) {
-    error_log(print_r($args, true));
     if (isset($args->slug) && $args->slug === 'meta-description-boy') {
         $response = wp_remote_get('https://raw.githubusercontent.com/nkatsambiris/meta-description-boy/main/plugin-info.json');
         if (!is_wp_error($response)) {
             $plugin_info = json_decode(wp_remote_retrieve_body($response));
             if ($plugin_info) {
                 return (object) array(
+                    'slug' => $args->slug, 
                     'name' => $plugin_info->name,
                     'version' => $plugin_info->version,
                     'author' => $plugin_info->author,
@@ -484,7 +482,12 @@ function meta_description_boy_plugin_info($false, $action, $args) {
                     'sections' => array(
                         'description' => $plugin_info->sections->description,
                         'changelog' => $plugin_info->sections->changelog
-                    )
+                    ),
+                    'download_link' => $plugin_info->download_link,
+                    'banners' => array(
+                        'low' => 'https://raw.githubusercontent.com/nkatsambiris/meta-description-boy/main/banner-772x250.jpg',
+                        'high' => 'https://raw.githubusercontent.com/nkatsambiris/meta-description-boy/main/banner-1544x500.jpg'
+                    ),
                 );
             }
         }
