@@ -6,39 +6,8 @@
     "tested": "6.3",
     "last_updated": "2023-10-27",
     "sections": {
-        "description": "A Wordpress plugin that connects to OpenAI to generate a meta description for your page.<br>    <h2>Installation</h2>
-    <ol>
-        <li>Download the Meta Description Boy plugin from the GitHub repository.</li>
-        <li>Log in to your WordPress website.</li>
-        <li>Go to the <strong>Plugins</strong> menu, then click <strong>Add New</strong>.</li>
-        <li>Click <strong>Upload Plugin</strong>, and choose the plugin file you downloaded.</li>
-        <li>Click <strong>Install Now</strong> and then <strong>Activate</strong> the plugin.</li>
-    </ol>
-
-    <h2>Updating Settings</h2>
-    <ol>
-        <li>Go to the <strong>Settings</strong> menu, then click <strong>Meta Description Boy</strong>.</li>
-        <li>Here you can:
-            <ul>
-                <li>Enter your OpenAI API Key.</li>
-                <li>Select the post types for which you want to generate meta descriptions.</li>
-                <li>Select the OpenAI model you want to use.</li>
-                <li>Update the prompt text if needed.</li>
-                <li>Select the user roles that can access the settings page and metabox.</li>
-            </ul>
-        </li>
-        <li>Click <strong>Save Changes</strong> to apply your updates.</li>
-    </ol>
-    <h2>Generating Meta Descriptions</h2>
-    <ol>
-        <li>Go to the <strong>Posts</strong> or <strong>Pages</strong> section in your WordPress dashboard.</li>
-        <li>Select the post or page you want to generate a meta description for.</li>
-        <li>On the post/page editing screen, locate the <strong>Meta Description</strong> meta box, usually found on the right-hand side.</li>
-        <li>Make sure there is some content in the post/page. The <strong>Generate Meta Description</strong> button will appear once there's content.</li>
-        <li>Click the <strong>Generate Meta Description</strong> button. The plugin will generate a meta description based on the content and display it below the button.</li>
-        <li>If you wish, click the <strong>Copy to Clipboard</strong> button to copy the generated meta description, and then paste it into the meta description field of your SEO plugin.</li>
-    </ol>",
-        "changelog": "Performance improvements"
+        "description": "A Wordpress plugin that connects to OpenAI to generate a meta description for your page.<br><h2>Installation</h2><ol><li>Download the plugin from the <a href=\"https://github.com/nkatsambiris/Meta-Description-Boy/archive/refs/tags/meta-description-boy-1.0.1.zip\">GitHub repository</a>.</li><li>Log in to your WordPress dashboard.</li><li>Go to Plugins > Add New.</li><li>Click on the Upload Plugin button, and choose the downloaded zip file.</li><li>Click on Install Now and then Activate.</li></ol><h2>Updating Settings</h2><ol><li>Go to Settings > Meta Description Boy.</li><li>Enter your OpenAI API Key.</li><li>Select the post types you want to generate meta descriptions for.</li><li>Choose your OpenAI model.</li><li>Click on Save Changes.</li></ol><h2>Generating Meta Description</h2><ol><li>Edit a post or page.</li><li>If content is present, click on the Generate Meta Description button in the Meta Description Boy box on the right hand side.</li><li>Once generated, a message will appear below the button along with a Copy to Clipboard button.</li><li>Click on Copy to Clipboard to copy the generated meta description.</li></ol>",
+        "changelog": "<strong>1.0.1</strong><p>Initial Commit</p>"
     },
     "download_link": "https://github.com/nkatsambiris/Meta-Description-Boy/archive/refs/tags/meta-description-boy-1.0.1.zip"
 }
