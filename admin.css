@@ -1,0 +1,28 @@
+button#meta_description_boy_generate_meta_description {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 127px;
+}
+
+#meta_description_boy_meta_box .inside {
+    margin-top: 20px;
+}
+
+#meta_description_boy_metadescription_textarea {
+    overflow-y: hidden;
+    resize: none;
+    min-height: 50px;
+    width: 100%;
+}
+
+.meta-description-boy-model-selector {
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    & label {
+        position: relative;
+        top: -2px;
+    }
+}
