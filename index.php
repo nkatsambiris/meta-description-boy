@@ -2,7 +2,7 @@
 /*
 Plugin Name: Meta Description Boy
 Description: Auto-generates meta description for post types using OpenAI.
-Version: 1.0
+Version: 1.0.1
 Author: Nicholas Katsambiris
 */
 
