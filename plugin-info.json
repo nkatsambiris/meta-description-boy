@@ -1,0 +1,13 @@
+{
+    "name": "Meta Description Boy",
+    "version": "1.0.1",
+    "author": "Nicholas Katsambiris",
+    "requires": "5.8",
+    "tested": "56.3",
+    "last_updated": "2023-10-27",
+    "sections": {
+        "description": "A Wordpress plugin that connects to OpenAI to generate a meta description for your page.",
+        "changelog": "Performance improvements"
+    },
+    "download_link": "https://github.com/nkatsambiris/Meta-Description-Boy/archive/refs/tags/meta-description-boy-1.0.1.zip"
+}
