@@ -464,7 +464,7 @@ function meta_description_boy_check_for_update($transient) {
 }
 add_filter('pre_set_site_transient_update_plugins', 'meta_description_boy_check_for_update');
 
-
+// Displayed in the pligin info window
 function meta_description_boy_plugin_info($false, $action, $args) {
     if (isset($args->slug) && $args->slug === 'meta-description-boy') {
         $response = wp_remote_get('https://raw.githubusercontent.com/nkatsambiris/meta-description-boy/main/plugin-info.json');
@@ -495,3 +495,14 @@ function meta_description_boy_plugin_info($false, $action, $args) {
     return $false;
 }
 add_filter('plugins_api', 'meta_description_boy_plugin_info', 10, 3);
+
+// Used to rename the zip folder on plugin update success
+function meta_description_boy_upgrader_package_options($options) {
+    if (isset($options['hook_extra']['plugin']) && $options['hook_extra']['plugin'] === 'meta-description-boy/index.php') {
+        $options['destination'] = WP_PLUGIN_DIR . '/meta-description-boy';
+        $options['clear_destination'] = true; // Overwrite the files
+    }
+    return $options;
+}
+add_filter('upgrader_package_options', 'meta_description_boy_upgrader_package_options');
+
