@@ -1,4 +1,7 @@
-# Meta-Description-Boy
+# Meta Description Boy
+
+![meta description boy header image](###)
+
 A Wordpress plugin that connects to OpenAI to generate a meta description for your page.
 
 This is currently used in-house to streamline the process of generating a meta description. 
