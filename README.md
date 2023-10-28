@@ -1,6 +1,6 @@
 # Meta Description Boy
 
-![meta description boy header image](###)
+![meta description boy header image](banner-1544x500.jpg)
 
 A Wordpress plugin that connects to OpenAI to generate a meta description for your page.
 
