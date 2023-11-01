@@ -2,7 +2,7 @@
 /**
 * Plugin Name: Meta Description Boy
 * Description: Auto-generates meta description for post types using OpenAI.
-* Version: 1.0
+* Version: 1.0.1
 * Plugin URI:  https://www.katsambiris.com
 * Author: Nicholas Katsambiris
 * Update URI: meta-description-boy
@@ -85,6 +85,15 @@ function meta_description_boy_options_page() {
 
 // Register custom metabox
 function meta_description_boy_add_meta_box() {
+
+    // Check if the OpenAI API key is set
+    $api_key = get_option('meta_description_boy_api_key');
+    if (empty($api_key)) {
+        // API key not set, so return early and do not add the meta box
+        return;
+    }
+    
+    // Check if the user has access
     $user = wp_get_current_user();
     $allowed_roles = get_option('meta_description_boy_allowed_roles', array('administrator'));
     if (!array_intersect($allowed_roles, $user->roles)) {
@@ -173,14 +182,20 @@ function meta_description_boy_admin_init() {
 
     // Settings sections & fields
     add_settings_section('meta_description_boy_api_settings', 'API Settings', null, 'meta-description-boy');
+    
     add_settings_field('meta_description_boy_api_key_field', 'OpenAI API Key', 'meta_description_boy_api_key_field_cb', 'meta-description-boy', 'meta_description_boy_api_settings');
     add_settings_field('meta_description_boy_post_types_field', 'Post Types', 'meta_description_boy_post_types_field_cb', 'meta-description-boy', 'meta_description_boy_api_settings');
     add_settings_field('meta_description_boy_model_field', 'OpenAI Model', 'meta_description_boy_model_field_cb', 'meta-description-boy', 'meta_description_boy_api_settings');
     add_settings_field('meta_description_boy_instruction_text_field', 'Instruction Text', 'meta_description_boy_instruction_text_field_cb', 'meta-description-boy', 'meta_description_boy_api_settings');
     add_settings_field('meta_description_boy_allowed_roles_field', 'Allowed User Roles', 'meta_description_boy_allowed_roles_field_cb', 'meta-description-boy', 'meta_description_boy_api_settings');
-
+    add_settings_field('meta_description_boy_debug_field', 'Enable Debug Output', 'meta_description_boy_debug_field_cb', 'meta-description-boy', 'meta_description_boy_api_settings');
 }
 add_action('admin_init', 'meta_description_boy_admin_init');
+
+function meta_description_boy_debug_field_cb() {
+    $debug_enabled = get_option('meta_description_boy_debug_enabled');
+    echo "<input type='checkbox' name='meta_description_boy_debug_enabled' value='1'" . checked(1, $debug_enabled, false) . " />";
+}
 
 function meta_description_boy_instruction_text_field_cb() {
     $instruction_text = get_option('meta_description_boy_instruction_text', 'Write a 160 character or less SEO meta description based on the following content.');
@@ -229,7 +244,10 @@ function meta_description_boy_post_types_field_cb() {
         'shop_coupon',
         'shop_order_placehold',
         'product_variation',
-        'scheduled-action'
+        'scheduled-action',
+        'jp_mem_plan',
+        'jp_pay_order',
+        'jp_pay_product'
     );
 
     // Filter out the excluded post types
@@ -385,33 +403,36 @@ function extract_acf_content($data) {
 
 // Debug output
 function debug_content_on_admin() {
-    global $pagenow;
+    $debug_enabled = get_option('meta_description_boy_debug_enabled');
+    if ($debug_enabled) {
+        global $pagenow;
     
-    // Check if we're editing a post or a page
-    if ($pagenow == 'post.php' && isset($_GET['action']) && $_GET['action'] == 'edit') {
-
-        $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+        // Check if we're editing a post or a page
+        if ($pagenow == 'post.php' && isset($_GET['action']) && $_GET['action'] == 'edit') {
     
-        $title = get_the_title($post_id) . ' '; // Equivalent to get_name
-    
-        $wc_content = '';
-        if ('product' === get_post_type($post_id)) {
-            $wc_content = get_post_field('post_excerpt', $post_id);
+            $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+        
+            $title = get_the_title($post_id) . ' '; // Equivalent to get_name
+        
+            $wc_content = '';
+            if ('product' === get_post_type($post_id)) {
+                $wc_content = get_post_field('post_excerpt', $post_id);
+            }
+        
+            $acf_content = '';
+            if (function_exists('get_fields')) {
+                $acf_data = get_fields($post_id);
+                $acf_content_raw = extract_acf_content($acf_data);
+                $acf_content = remove_table_content($acf_content_raw);
+            }
+        
+            $post_content_raw = get_post_field('post_content', $post_id);
+            $post_content = $title . ' ' . remove_table_content($post_content_raw) . ' ' . esc_html($acf_content) . ' ' . $wc_content;
+        
         }
-    
-        $acf_content = '';
-        if (function_exists('get_fields')) {
-            $acf_data = get_fields($post_id);
-            $acf_content_raw = extract_acf_content($acf_data);
-            $acf_content = remove_table_content($acf_content_raw);
-        }
-    
-        $post_content_raw = get_post_field('post_content', $post_id);
-        $post_content = $title . ' ' . remove_table_content($post_content_raw) . ' ' . esc_html($acf_content) . ' ' . $wc_content;
-    
     }
 }
-// add_action('admin_notices', 'debug_content_on_admin');
+add_action('admin_notices', 'debug_content_on_admin');
 
 // Remove table content from being sent to OpenAI
 function remove_table_content($content) {
@@ -448,7 +469,7 @@ function meta_description_boy_check_for_update($transient) {
         return $transient;
     }
 
-    $updater = new My_Plugin_Updater('1.0.0', 'https://raw.githubusercontent.com/nkatsambiris/meta-description-boy/main/updates.json');
+    $updater = new My_Plugin_Updater('1.0.1', 'https://raw.githubusercontent.com/nkatsambiris/meta-description-boy/main/updates.json');
     $update_data = $updater->check_for_update();
 
     if ($update_data) {
