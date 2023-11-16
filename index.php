@@ -2,7 +2,7 @@
 /**
 * Plugin Name: Meta Description Boy
 * Description: Auto-generates meta description for post types using OpenAI.
-* Version: 1.0.1
+* Version: 1.0.2
 * Plugin URI:  https://www.katsambiris.com
 * Author: Nicholas Katsambiris
 * Update URI: meta-description-boy
@@ -45,6 +45,7 @@ function meta_description_boy_uninstall() {
     delete_option('meta_description_boy_selected_model');
     delete_option('meta_description_boy_prompt_text');
     delete_option('meta_description_boy_access_role');
+    delete_option('meta_description_boy_debug_enabled');
 }
 register_uninstall_hook(__FILE__, 'meta_description_boy_uninstall');
 
@@ -140,11 +141,11 @@ function meta_description_boy_meta_box_callback($post) {
         echo '<div id="meta_description_boy_output" style="margin-top: 10px;"></div>'; // Container for output
         
         // Retrieve the selected model from the database
-        $selected_model = get_option('meta_description_boy_selected_model', 'gpt-3.5-turbo-0613');  // Default to 'gpt-3.5-turbo-0613'
+        $selected_model = get_option('meta_description_boy_selected_model', 'gpt-3.5-turbo-1106');  // Default to 'gpt-3.5-turbo-1106'
         
         // Display the model selection radio buttons
         echo '<div class="meta-description-boy-model-selector">';
-        echo '<div><input id="radio-gpt-3-5" type="radio" name="meta_description_boy_selected_model" value="gpt-3.5-turbo-0613"' . checked($selected_model, 'gpt-3.5-turbo-0613', false) . '> <label for="radio-gpt-3-5">GPT-3.5</label></div>';
+        echo '<div><input id="radio-gpt-3-5" type="radio" name="meta_description_boy_selected_model" value="gpt-3.5-turbo-1106"' . checked($selected_model, 'gpt-3.5-turbo-1106', false) . '> <label for="radio-gpt-3-5">GPT-3.5</label></div>';
         echo '<div><input id="radio-gpt-4" type="radio" name="meta_description_boy_selected_model" value="gpt-4"' . checked($selected_model, 'gpt-4', false) . '> <label for="radio-gpt-4">GPT-4</label></div>';
         echo '</div>';
         
@@ -179,6 +180,7 @@ function meta_description_boy_admin_init() {
     register_setting('meta_description_boy_options', 'meta_description_boy_selected_model');
     register_setting('meta_description_boy_options', 'meta_description_boy_instruction_text');
     register_setting('meta_description_boy_options', 'meta_description_boy_allowed_roles');
+    register_setting('meta_description_boy_options', 'meta_description_boy_debug_enabled');
 
     // Settings sections & fields
     add_settings_section('meta_description_boy_api_settings', 'API Settings', null, 'meta-description-boy');
@@ -260,9 +262,9 @@ function meta_description_boy_post_types_field_cb() {
 }
 
 function meta_description_boy_model_field_cb() {
-    $selected_model = get_option('meta_description_boy_selected_model', 'gpt-3.5-turbo-0613'); // Default to 'gpt-3.5-turbo-0613'
+    $selected_model = get_option('meta_description_boy_selected_model', 'gpt-3.5-turbo-1106'); // Default to 'gpt-3.5-turbo-1106'
     $models = array(
-        'gpt-3.5-turbo-0613' => 'GPT-3.5 Turbo',
+        'gpt-3.5-turbo-1106' => 'GPT-3.5 Turbo',
         'gpt-4' => 'GPT-4'
     );
     foreach ($models as $model => $label) {
@@ -323,7 +325,7 @@ function meta_description_boy_handle_ajax_request() {
 
     $api_key = get_option('meta_description_boy_api_key');
 
-    $model = get_option('meta_description_boy_selected_model', 'gpt-3.5-turbo-0613'); // Get the selected model or default to 'gpt-3.5-turbo-0613'
+    $model = get_option('meta_description_boy_selected_model', 'gpt-3.5-turbo-1106'); // Get the selected model or default to 'gpt-3.5-turbo-1106'
 
     $instruction_text = get_option('meta_description_boy_instruction_text', 'Write a 160 character or less SEO meta description based on the following content.');
     
@@ -428,7 +430,9 @@ function debug_content_on_admin() {
         
             $post_content_raw = get_post_field('post_content', $post_id);
             $post_content = $title . ' ' . remove_table_content($post_content_raw) . ' ' . esc_html($acf_content) . ' ' . $wc_content;
-        
+
+            // Echo the content
+            echo '<div class="notice notice-info"><p>' . esc_html($post_content) . '</p></div>';
         }
     }
 }
@@ -469,7 +473,7 @@ function meta_description_boy_check_for_update($transient) {
         return $transient;
     }
 
-    $updater = new My_Plugin_Updater('1.0.1', 'https://raw.githubusercontent.com/nkatsambiris/meta-description-boy/main/updates.json');
+    $updater = new My_Plugin_Updater('1.0.2', 'https://raw.githubusercontent.com/nkatsambiris/meta-description-boy/main/updates.json');
     $update_data = $updater->check_for_update();
 
     if ($update_data) {
