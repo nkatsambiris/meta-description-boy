@@ -2,7 +2,7 @@
 /**
 * Plugin Name: Meta Description Boy
 * Description: Auto-generates meta description for post types using OpenAI.
-* Version: 1.0.2
+* Version: 1.0.3
 * Plugin URI:  https://www.katsambiris.com
 * Author: Nicholas Katsambiris
 * Update URI: meta-description-boy
@@ -443,6 +443,71 @@ function remove_table_content($content) {
     return preg_replace('/<table.*?>.*?<\/table>/si', '', $content);
 }
 
+// Add custom field and button in Quick Edit
+function meta_description_boy_quick_edit($column_name, $post_type) {
+    if ('meta_description_boy_yst_meta_description' === $column_name && in_array($post_type, ['post', 'page'])) {
+        wp_nonce_field('meta_description_boy_nonce', 'meta_description_boy_nonce');
+        echo '<fieldset class="inline-edit-col-right">
+                <div class="inline-edit-col">
+                    <div class="mdb-error-notice"></div>
+                    <label>
+                        <span class="title">Meta Description</span>
+                        <span class="input-text-wrap">
+                            <textarea name="mdb-yoast-meta-description" class="ptitle"></textarea>
+                        </span>
+                    </label>
+                    <button type="button" class="button generate-meta-description" data-post-id="">
+                        Generate Meta Description
+                    </button>
+                </div>
+            </fieldset>';
+    }
+}
+add_action('quick_edit_custom_box', 'meta_description_boy_quick_edit', 10, 2);
+
+
+function add_yoast_meta_desc_column($columns) {
+    $columns['meta_description_boy_yst_meta_description'] = 'Meta Description';
+    return $columns;
+}
+add_filter('manage_posts_columns', 'add_yoast_meta_desc_column');
+add_filter('manage_pages_columns', 'add_yoast_meta_desc_column');
+
+function display_yoast_meta_desc_column($column, $post_id) {
+    if ($column == 'meta_description_boy_yst_meta_description') {
+        // Fetch and display the Yoast meta description for the post
+        echo get_post_meta($post_id, '_yoast_wpseo_metadesc', true);
+    }
+}
+add_action('manage_posts_custom_column', 'display_yoast_meta_desc_column', 10, 2);
+add_action('manage_pages_custom_column', 'display_yoast_meta_desc_column', 10, 2);
+
+
+function save_yoast_meta_description() {
+    $post_id = $_POST['post_id'];
+    $meta_desc = $_POST['meta_desc'];
+
+    if (!empty($post_id)) {
+        // Update the Yoast meta description for the post
+        update_post_meta($post_id, '_yoast_wpseo_metadesc', sanitize_text_field($meta_desc));
+        echo 'Meta description updated successfully';
+    } else {
+        echo 'Error: Post ID or meta description is missing';
+    }
+    wp_die(); // This is required to terminate immediately and return a proper response
+}
+add_action('wp_ajax_save_yoast_meta_description', 'save_yoast_meta_description');
+
+
+function enqueue_meta_description_boy_quick_edit_script($hook) {
+    if ('edit.php' !== $hook) {
+        return;
+    }
+    wp_enqueue_script('meta-description-boy-quick-edit', plugin_dir_url(__FILE__) . 'quick-edit.js', array('jquery'), '1.0', true);
+    wp_localize_script('meta-description-boy-quick-edit', 'ajax_object', array('ajaxurl' => admin_url('admin-ajax.php')));
+}
+add_action('admin_enqueue_scripts', 'enqueue_meta_description_boy_quick_edit_script');
+
 
 // Updater
 class My_Plugin_Updater {
@@ -473,7 +538,7 @@ function meta_description_boy_check_for_update($transient) {
         return $transient;
     }
 
-    $updater = new My_Plugin_Updater('1.0.2', 'https://raw.githubusercontent.com/nkatsambiris/meta-description-boy/main/updates.json');
+    $updater = new My_Plugin_Updater('1.0.3', 'https://raw.githubusercontent.com/nkatsambiris/meta-description-boy/main/updates.json');
     $update_data = $updater->check_for_update();
 
     if ($update_data) {
