@@ -2,14 +2,14 @@
 /**
 * Plugin Name: Meta Description Boy
 * Description: Auto-generates meta description for post types using OpenAI.
-* Version: 1.0.3
+* Version: 1.0.4
 * Plugin URI:  https://www.katsambiris.com
 * Author: Nicholas Katsambiris
 * Update URI: meta-description-boy
 * License: GPL v3
 * Tested up to: 6.3
 * Requires at least: 6.2
-* Requires PHP: 8.1
+* Requires PHP: 7.4
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -538,7 +538,7 @@ function meta_description_boy_check_for_update($transient) {
         return $transient;
     }
 
-    $updater = new My_Plugin_Updater('1.0.3', 'https://raw.githubusercontent.com/nkatsambiris/meta-description-boy/main/updates.json');
+    $updater = new My_Plugin_Updater('1.0.4', 'https://raw.githubusercontent.com/nkatsambiris/meta-description-boy/main/updates.json');
     $update_data = $updater->check_for_update();
 
     if ($update_data) {
